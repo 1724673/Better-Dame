@@ -136,4 +136,10 @@ public class BoardTest {
         System.out.println(this.board.printBoard());
     }
 
+    @Test
+    public void settingASingleFigureWorks() {
+        this.board.setSingleFigureOnBoard('A', 2, Colors.BLACK);
+        assertEquals(Colors.BLACK, this.board.getFields().get("A2").getCurrentFigure().getColor());
+    }
+
 }

@@ -14,7 +14,7 @@ public class Board {
         this.fields = generateFields();
     }
 
-    HashMap<String, Field> getFields() {
+    public HashMap<String, Field> getFields() {
         return fields;
     }
 
@@ -58,12 +58,18 @@ public class Board {
                 .forEach(key -> this.fields.get(key).setCurrentFigure(new Figure(Colors.WHITE)));
     }
 
+    public void setSingleFigureOnBoard(char row, int column, Colors color) {
+        this.fields.get("" + row + column).setCurrentFigure(new Figure(color));
+    }
+
     String printBoard() {
         StringBuilder sb = new StringBuilder();
 
         for (char i = 'A'; i <= 'H'; i++) {
             for (int j = 1; j <= 8; j++) {
+
                 String id = "" + i + j;
+
                 if (null != fields.get(id).getCurrentFigure() && fields.get(id).getCurrentFigure().getColor() == Colors.BLACK) {
                     if (j == 8) sb.append("●\n");
                     else sb.append("●\t\t");
@@ -72,22 +78,17 @@ public class Board {
                     if (j == 8) sb.append("○\n");
                     else sb.append("○\t\t");
                 }
-
                 if (null == fields.get(id).getCurrentFigure() && fields.get(id).getColor() == Colors.BLACK) {
                     if (j == 8) sb.append("B\n");
                     else sb.append("B\t\t");
                 }
-
                 if (null == fields.get(id).getCurrentFigure() && fields.get(id).getColor() == Colors.WHITE) {
                     if (j == 8) sb.append("W\n");
                     else sb.append("W\t\t");
                 }
-
             }
         }
-
         return sb.toString();
-
     }
 
     private Field createWhiteField(char i, int j) {
@@ -97,5 +98,4 @@ public class Board {
     private Field createBlackField(char i, int j) {
         return new Field(i, j, Colors.BLACK);
     }
-
 }
