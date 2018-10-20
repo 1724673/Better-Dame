@@ -93,7 +93,7 @@ class Game {
                         ArrayList<String> possibleDestinations = new ArrayList<>();
 
                         // Find all solutions based on starting key ID
-                        possibleDestinations.addAll(findSolutionsForWhiteMen(key));
+                        possibleDestinations.addAll(findSolutionsForField(key));
 
                         // Put result in class field HashMap
                         this.currentPossibleMoves.put(key, possibleDestinations);
@@ -122,7 +122,7 @@ class Game {
                         ArrayList<String> possibleDestinations = new ArrayList<>();
 
                         // Find all solutions based on starting key ID
-                        possibleDestinations.addAll(findSolutionsForBlackMen(key));
+                        possibleDestinations.addAll(findSolutionsForField(key));
 
                         // Put result in class field HashMap
                         this.currentPossibleMoves.put(key, possibleDestinations);
@@ -133,93 +133,46 @@ class Game {
 
     }
 
-    private ArrayList<String> findSolutionsForBlackMen(String key) {
+    private List<String> findSolutionsForField(String key) {
+        List<String> solutions = new ArrayList<>();
 
-        ArrayList<String> possibleDestinations = new ArrayList<>();
+        // Determine direction of field advancement for men according to player's color
+        int direction = (this.activePlayer.getColor() == Colors.WHITE ? -1 : 1);
 
-        char row = key.toCharArray()[0];
-        char column = key.toCharArray()[1];
+        // Construct field ID for direct neighbors
+        String idLeftMove = "" + (char) (key.toCharArray()[0] + direction) + (char) (key.toCharArray()[1] + 1);
+        String idRightMove = "" + (char) (key.toCharArray()[0] + direction) + (char) (key.toCharArray()[1] - 1);
 
-        String idForLeftMove = "" + (char) (row + 1) + (char) (column - 1);
-        String idForRightMove = "" + (char) (row + 1) + (char) (column + 1);
+        // Construct field IDs for 2nd direct neighbors
+        String idLeftMove2 = "" + (char) (key.toCharArray()[0] + 2 * direction) + (char) (key.toCharArray()[1] + 2);
+        String idRightMove2 = "" + (char) (key.toCharArray()[0] + 2 * direction) + (char) (key.toCharArray()[1] - 2);
 
-        String idForLeftMove2 = "" + (char) (row + 2) + (char) (column - 2);
-        String idForRightMove2 = "" + (char) (row + 2) + (char) (column + 2);
-
-        if (null != board.getFields().get(idForLeftMove)
-                && null == board.getFields().get(idForLeftMove).getCurrentFigure())
-            possibleDestinations.add(idForLeftMove);
-
-        if (null != board.getFields().get(idForRightMove)
-                && null == board.getFields().get(idForRightMove).getCurrentFigure())
-            possibleDestinations.add(idForRightMove);
-
-        if (null != board.getFields().get(idForLeftMove)
-                && null != board.getFields().get(idForLeftMove).getCurrentFigure()
-                && board.getFields().get(idForLeftMove).getCurrentFigure().getColor() == Colors.WHITE) {
-
-            if (null != board.getFields().get(idForLeftMove2)
-                    && null == board.getFields().get(idForLeftMove2).getCurrentFigure()) {
-                possibleDestinations.add(idForLeftMove2);
-                possibleDestinations.addAll(findSolutionsForBlackMen(idForLeftMove2));
+        if (board.getFields().get(key).getCurrentFigure() != null) {
+            if (null != board.getFields().get(idLeftMove)
+                    && null == board.getFields().get(idLeftMove).getCurrentFigure()) {
+                solutions.add(idLeftMove);
+            }
+            if (null != board.getFields().get(idRightMove)
+                    && null == board.getFields().get(idRightMove).getCurrentFigure()) {
+                solutions.add(idRightMove);
             }
         }
 
-        if (null != board.getFields().get(idForRightMove)
-                && null != board.getFields().get(idForRightMove).getCurrentFigure()
-                && board.getFields().get(idForRightMove).getCurrentFigure().getColor() == Colors.WHITE) {
+        findJumpSolutions(solutions, idLeftMove, idLeftMove2);
+        findJumpSolutions(solutions, idRightMove, idRightMove2);
 
-            if (null != board.getFields().get(idForRightMove2)
-                    && null == board.getFields().get(idForRightMove2).getCurrentFigure()) {
-                possibleDestinations.add(idForRightMove2);
-                possibleDestinations.addAll(findSolutionsForBlackMen(idForRightMove2));
-            }
-        }
-        return possibleDestinations;
+        return solutions;
     }
 
-    private ArrayList<String> findSolutionsForWhiteMen(String key) {
-
-        ArrayList<String> possibleDestinations = new ArrayList<>();
-
-        char row = key.toCharArray()[0];
-        char column = key.toCharArray()[1];
-
-        String idForLeftMove = "" + (char) (row - 1) + (char) (column - 1);
-        String idForRightMove = "" + (char) (row - 1) + (char) (column + 1);
-
-        String idForLeftMove2 = "" + (char) (row - 2) + (char) (column - 2);
-        String idForRightMove2 = "" + (char) (row - 2) + (char) (column + 2);
-
-        if (null != board.getFields().get(idForLeftMove)
-                && null == board.getFields().get(idForLeftMove).getCurrentFigure())
-            possibleDestinations.add(idForLeftMove);
-
-        if (null != board.getFields().get(idForRightMove)
-                && null == board.getFields().get(idForRightMove).getCurrentFigure())
-            possibleDestinations.add(idForRightMove);
-
-        if (null != board.getFields().get(idForLeftMove)
-                && null != board.getFields().get(idForLeftMove).getCurrentFigure()
-                && board.getFields().get(idForLeftMove).getCurrentFigure().getColor() == Colors.BLACK) {
-
-            if (null != board.getFields().get(idForLeftMove2)
-                    && null == board.getFields().get(idForLeftMove2).getCurrentFigure()) {
-                possibleDestinations.add(idForLeftMove2);
-                possibleDestinations.addAll(findSolutionsForWhiteMen(idForLeftMove2));
-            }
+    private void findJumpSolutions(List<String> solutions, String idJumpMove, String idJumpMove2) {
+        if (null != board.getFields().get(idJumpMove2)
+                && null != board.getFields().get(idJumpMove).getCurrentFigure()
+                && !board.getFields().get(idJumpMove).getCurrentFigure().getColor().equals(activePlayer.getColor())
+                && null == board.getFields().get(idJumpMove2).getCurrentFigure()) {
+            List<String> jumpSolution = new ArrayList<>();
+            jumpSolution = this.findSolutionsForField(idJumpMove2);
+            if (jumpSolution.isEmpty()) solutions.add(idJumpMove2 + "!"); // '!' to signal jump duty
+            else solutions.addAll(jumpSolution);
         }
-
-        if (null != board.getFields().get(idForRightMove)
-                && null != board.getFields().get(idForRightMove).getCurrentFigure()
-                && board.getFields().get(idForRightMove).getCurrentFigure().getColor() == Colors.BLACK) {
-
-            if (null != board.getFields().get(idForRightMove2)
-                    && null == board.getFields().get(idForRightMove2).getCurrentFigure()) {
-                possibleDestinations.add(idForRightMove2);
-                possibleDestinations.addAll(findSolutionsForWhiteMen(idForRightMove2));
-            }
-        }
-        return possibleDestinations;
     }
 }
